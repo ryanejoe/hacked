@@ -12,5 +12,3 @@ this will both encrypt and decrypt your files, during encryption it will provide
 key to decrypt the file, it uses the cryptography library 
 -PORT SCANNER-
 its a port scanner it does what the name says! it scans a network for open ports and displays them
-
-********************************************************************WILL ADD MORE SOON************************************************************************
