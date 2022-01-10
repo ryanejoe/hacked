@@ -1,7 +1,7 @@
 																																		welcome!
 _**intro**_: glyched, is a toolset which contains many use full tools(only a few have been added so far)
 
-_**tools**_: file encrytion using fernet,port scanner, sherlock, mass-emailer, mac-changer
+_**tools**_: file encrytion using fernet,port scanner, sherlock, mass-emailer, mac-changer, network scanner
 
 _**_note- sherlock is not made by me, my program simply installs it and makes it easier to use_**
 
@@ -22,7 +22,10 @@ _
 
 ****mac changer:**** spoofs your mac address, makes it harder to trace your device
 
+****network scanner:**** will scan a network and return all devices connected to the network(ipv4 adresses and MAC adresses)
 personal tips:
 if you are trying to acsess information censored in your country try using a vpn, a free one is soft ether
 
 if the program doesnt run, then try installing all the required dependancies 
+
+upcomming: arp spoofer
