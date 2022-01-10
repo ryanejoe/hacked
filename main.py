@@ -1,4 +1,3 @@
-
 from cryptography.fernet import Fernet
 import socket
 import subprocess
@@ -9,7 +8,8 @@ from colorama import Fore, Back, Style
 import csv
 from email.message import EmailMessage
 import smtplib
-import pyfiglet
+import re
+import scapy.all as scapy
 def encryption_fernet():
     decrpt_or_encrpt = input("do you want to decrypt or encrypt the file(e/d):")
     if decrpt_or_encrpt == "e":
@@ -122,15 +122,39 @@ def mac_changer():
     subprocess.call(['sudo', 'ifconfig', interface, 'down'])
     subprocess.call(['sudo', 'ifconfig', interface, 'hw', 'ether', new_mac])
     subprocess.call(['sudo', 'ifconfig', interface, 'up'])
+    ifconfig_result = subprocess.check_output(['ifconfig', interface])
+    ifconfig_results_search = re.search(r'\w\w:\w\w:\w\w:\w\w:\w\w:\w\w', ifconfig_result.decode("utf-8"))
+    if ifconfig_results_search:
+        print(Fore.LIGHTGREEN_EX, "the MAC is changed to",ifconfig_results_search.group(0))
+    else:
+        print(Fore.LIGHTRED_EX, "[-] could not find mac address")
+def network_scanner():
+    ip_r = input("enter ip range:")
+    arp_broadcast = scapy.ARP(pdst = ip_r)
+    broadcast = scapy.Ether(dst = "ff:ff:ff:ff:ff:ff")
+    arp_request_broadcast = broadcast/arp_broadcast
+    answered_list,un= scapy.srp(arp_request_broadcast, timeout=1,verbose = False)   
+    clients_list = []
+    print("IP\t\t\tMAC ADDRESS\n---------------------------------------------------------")
+    for i in answered_list:
+        client_dict= {'ip': i[1].psrc, 'mac': i[1].hwsrc}
+        clients_list.append(client_dict)
+    result_list = clients_list
+    for i in result_list:
+        
+        print(i["ip"], "\t\t", i["mac"])
 
 while True:
+    print(Fore.LIGHTYELLOW_EX, "-------------------------------------")
     print(Fore.LIGHTGREEN_EX, "1. file encryption/decryption")
     print(Fore.LIGHTGREEN_EX, "2. sherlock")
     print(Fore.LIGHTGREEN_EX, "3.port scanner")
     print(Fore.LIGHTGREEN_EX, "4. mass emailer")
     print(Fore.LIGHTGREEN_EX, "5.mac changer")
+    print(Fore.LIGHTGREEN_EX,"6. network scanner")
     print(Fore.LIGHTRED_EX,"input exit to exit")
     print(Fore.LIGHTGREEN_EX,"-")
+    
     inpt=input("enter choice:")
     if inpt == "1":
         encryption_fernet()
@@ -142,6 +166,8 @@ while True:
         bulk_email()
     elif inpt == "5":
         mac_changer()
+    elif inpt == "6":
+        network_scanner()
     elif inpt == "exit":
         print(Fore.LIGHTRED_EX, "cya!")
         break
