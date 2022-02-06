@@ -1,14 +1,14 @@
 																																		welcome!
 _**intro**_: glyched, is a toolset which contains many use full tools(only a few have been added so far)
 
-_**tools**_: file encrytion using fernet,port scanner, sherlock, mass-emailer, mac-changer, network scanner, arp spoofer, network sniffer,dns spoofer
+_**tools**_: file encrytion using fernet,port scanner, sherlock, mass-emailer, mac-changer, network scanner, arp spoofer, network sniffer,dns spoofer, file interceptio
 
 _**_note- sherlock is not made by me, my program simply installs it and makes it easier to use_**
 
 **language**__: python
 
 _**libraries required**_: _cryptography, socket, sys, os, datetime, smptplib, csv, subprocess, colorama, email, pyfiglet,scapy,time,scapy_http,netfilterqueue
-_
+_,re,
 
                                            _
                                                  **TOOLS**
@@ -32,8 +32,10 @@ NOTE: MENT TO BE USED WITH ARP SPOOFER FOR PROPER ATTACKS
  
 ****DNS SPOOFER****: allows you to redirect a dns reest to a ip of choice
 
+****FILE INTERCEPTION****: allows you to replace all downloads with a your own download(must specify which file ext to replace), ONLY WORKS WITH HTTP
+
 ****if the program doesnt run, then try installing all the required dependancies****
 
-****UPCOMMING: FILE INTERCEPTION****
+****UPCOMMING: CODE INJECTION****
 
 upcomming may be delayed
