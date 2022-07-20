@@ -33,6 +33,7 @@ NOTE: MENT TO BE USED WITH ARP SPOOFER FOR PROPER ATTACKS
 ****DNS SPOOFER****: allows you to redirect a dns reest to a ip of choice
 
 ****FILE INTERCEPTION****: allows you to replace all downloads with a your own download(must specify which file ext to replace), ONLY WORKS WITH HTTP
+****SSL strip****: lets you strip the ssl(secure sockets layer or tls(transfer layer security) from packets which are going through you, should let you bypass https(WARNING STILL EXPERIMENTAL)
 
 ****if the program doesnt run, then try installing all the required dependancies****
 
