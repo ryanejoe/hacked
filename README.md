@@ -36,6 +36,6 @@ NOTE: MENT TO BE USED WITH ARP SPOOFER FOR PROPER ATTACKS
 
 ****if the program doesnt run, then try installing all the required dependancies****
 
-****UPCOMMING: CODE INJECTION****
 
-upcomming may be delayed
+
+Note: I am now just adding things as and when i feel like adding, and what i belive might be useful tools and make sense to add sooo the updates and new features are not going to be as frequent as prev
